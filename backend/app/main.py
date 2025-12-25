@@ -2,11 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import models, schemas, crud
 from app.database import engine, get_db
+from app.seed import load_stock_data
 
 # Create all tables on startup
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Stock Market API", version="1.0.0")
+
+@app.on_event("startup")
+def startup_event():
+    """Load initial data on application startup"""
+    load_stock_data()
 
 @app.get("/api/stocks", response_model=list[schemas.Stock])
 def get_stocks(db: Session = Depends(get_db)):
