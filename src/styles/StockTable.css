@@ -1,0 +1,106 @@
+.table-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: auto;
+  animation: slideUp 0.6s ease-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.stock-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+}
+
+.stock-table th {
+  padding: 1.2rem;
+  text-align: left;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.stock-table th.sortable:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3d95 100%);
+}
+
+.sort-indicator {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-left: 0.3rem;
+}
+
+.stock-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.stock-table tbody tr:hover {
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) inset;
+}
+
+.stock-table td {
+  padding: 1rem 1.2rem;
+  color: #333;
+}
+
+.stock-table td.trade-code {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.stock-table td.close-price {
+  font-weight: 600;
+  color: #333;
+}
+
+.stock-table td.volume {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.no-data {
+  background: white;
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 1.1rem;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .stock-table th,
+  .stock-table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .stock-table thead th {
+    padding: 0.75rem 0.5rem;
+  }
+}
