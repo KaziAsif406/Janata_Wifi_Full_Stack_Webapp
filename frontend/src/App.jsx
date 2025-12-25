@@ -1,14 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StockTable from './components/StockTable';
-import data from '../stock_market_data.json';
+import stockAPI from './services/stockAPI';
 import './styles/App.css';
 
 export default function App() {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filteredData = data.filter((item) =>
-    item.trade_code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch stocks from API on component mount
+  useEffect(() => {
+    const fetchStocks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await stockAPI.getAllStocks(0, 20000);
+        setData(response.data);
+      } catch (err) {
+        const errorMessage = err.response?.data?.detail || 
+                           err.message || 
+                           'Failed to fetch stock data';
+        setError(errorMessage);
+        console.error('Error fetching stocks:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStocks();
+  }, []);
+
+  // Filter data based on search term
+  useEffect(() => {
+    const filtered = data.filter((item) =>
+      item.trade_code.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filtered);
+  }, [data, searchTerm]);
 
   return (
     <div className="app">
@@ -17,6 +47,12 @@ export default function App() {
         <p className="subtitle">Real-time stock market information</p>
       </header>
 
+      {error && (
+        <div className="error-banner">
+          <span>⚠️ {error}</span>
+        </div>
+      )}
+
       <div className="search-container">
         <input
           type="text"
@@ -24,11 +60,13 @@ export default function App() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
+          disabled={loading}
         />
       </div>
 
       <main className="main-content">
-        <StockTable data={filteredData} />
+        {loading && <div className="loading">Loading stock data...</div>}
+        {!loading && <StockTable data={filteredData} />}
       </main>
     </div>
   );
