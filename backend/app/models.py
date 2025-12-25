@@ -1,14 +1,14 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float
 from app.database import Base
-from datetime import datetime
 
 class Stock(Base):
     __tablename__ = "stocks"
     
     id = Column(Integer, primary_key=True, index=True)
-    symbol = Column(String, unique=True, index=True)
-    name = Column(String)
-    price = Column(Float)
-    change = Column(Float)
-    change_percent = Column(Float)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    trade_code = Column(String, unique=True, index=True, nullable=False)
+    date = Column(String, nullable=False)
+    open = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    volume = Column(Integer, nullable=False)

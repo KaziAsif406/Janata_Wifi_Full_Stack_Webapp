@@ -4,8 +4,8 @@ from app import models, schemas
 def get_stocks(db: Session):
     return db.query(models.Stock).all()
 
-def get_stock(db: Session, symbol: str):
-    return db.query(models.Stock).filter(models.Stock.symbol == symbol).first()
+def get_stock(db: Session, trade_code: str):
+    return db.query(models.Stock).filter(models.Stock.trade_code == trade_code).first()
 
 def create_stock(db: Session, stock: schemas.StockCreate):
     db_stock = models.Stock(**stock.dict())
@@ -14,8 +14,8 @@ def create_stock(db: Session, stock: schemas.StockCreate):
     db.refresh(db_stock)
     return db_stock
 
-def update_stock(db: Session, symbol: str, stock: schemas.StockCreate):
-    db_stock = db.query(models.Stock).filter(models.Stock.symbol == symbol).first()
+def update_stock(db: Session, trade_code: str, stock: schemas.StockCreate):
+    db_stock = db.query(models.Stock).filter(models.Stock.trade_code == trade_code).first()
     if db_stock:
         for key, value in stock.dict().items():
             setattr(db_stock, key, value)
@@ -23,8 +23,8 @@ def update_stock(db: Session, symbol: str, stock: schemas.StockCreate):
         db.refresh(db_stock)
     return db_stock
 
-def delete_stock(db: Session, symbol: str):
-    db_stock = db.query(models.Stock).filter(models.Stock.symbol == symbol).first()
+def delete_stock(db: Session, trade_code: str):
+    db_stock = db.query(models.Stock).filter(models.Stock.trade_code == trade_code).first()
     if db_stock:
         db.delete(db_stock)
         db.commit()
