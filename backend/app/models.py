@@ -5,7 +5,7 @@ class Stock(Base):
     __tablename__ = "stocks"
     
     id = Column(Integer, primary_key=True, index=True)
-    trade_code = Column(String, unique=True, index=True, nullable=False)
+    trade_code = Column(String, index=True, nullable=False)
     date = Column(String, nullable=False)
     open = Column(Float, nullable=False)
     high = Column(Float, nullable=False)

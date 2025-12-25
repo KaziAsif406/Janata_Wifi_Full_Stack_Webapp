@@ -48,9 +48,6 @@ def search_stock_by_code(trade_code: str, db: Session = Depends(get_db)):
 @app.post("/api/stocks", response_model=schemas.Stock, status_code=201)
 def create_stock(stock: schemas.StockCreate, db: Session = Depends(get_db)):
     """Create a new stock record"""
-    db_stock = crud.get_stock_by_trade_code(db, stock.trade_code)
-    if db_stock:
-        raise HTTPException(status_code=400, detail="Stock with this trade code already exists")
     return crud.create_stock(db, stock)
 
 @app.put("/api/stocks/{stock_id}", response_model=schemas.Stock)

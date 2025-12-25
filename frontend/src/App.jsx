@@ -40,6 +40,15 @@ export default function App() {
     setFilteredData(filtered);
   }, [data, searchTerm]);
 
+  // Handle updated stock data
+  const handleDataUpdate = (updatedStock) => {
+    setData((prevData) =>
+      prevData.map((stock) =>
+        stock.id === updatedStock.id ? updatedStock : stock
+      )
+    );
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -66,7 +75,7 @@ export default function App() {
 
       <main className="main-content">
         {loading && <div className="loading">Loading stock data...</div>}
-        {!loading && <StockTable data={filteredData} />}
+        {!loading && <StockTable data={filteredData} onDataUpdate={handleDataUpdate} />}
       </main>
     </div>
   );
