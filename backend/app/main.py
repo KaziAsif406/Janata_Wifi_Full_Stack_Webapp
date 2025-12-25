@@ -15,38 +15,49 @@ def startup_event():
     load_stock_data()
 
 @app.get("/api/stocks", response_model=list[schemas.Stock])
-def get_stocks(db: Session = Depends(get_db)):
-    """Get all stocks"""
-    return crud.get_stocks(db)
+def get_all_stocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get all stocks with pagination (default: skip=0, limit=100)"""
+    return crud.get_stocks(db, skip=skip, limit=limit)
 
-@app.get("/api/stocks/{trade_code}", response_model=schemas.Stock)
-def get_stock(trade_code: str, db: Session = Depends(get_db)):
-    """Get stock by trade code"""
-    db_stock = crud.get_stock(db, trade_code)
+@app.get("/api/stocks/{stock_id}", response_model=schemas.Stock)
+def get_stock(stock_id: int, db: Session = Depends(get_db)):
+    """Get stock by ID"""
+    db_stock = crud.get_stock_by_id(db, stock_id)
     if not db_stock:
         raise HTTPException(status_code=404, detail="Stock not found")
+    return db_stock
+
+@app.get("/api/stocks/search/{trade_code}", response_model=schemas.Stock)
+def search_stock_by_code(trade_code: str, db: Session = Depends(get_db)):
+    """Search stock by trade code"""
+    db_stock = crud.get_stock_by_trade_code(db, trade_code)
+    if not db_stock:
+        raise HTTPException(status_code=404, detail="Stock with trade code not found")
     return db_stock
 
 @app.post("/api/stocks", response_model=schemas.Stock, status_code=201)
 def create_stock(stock: schemas.StockCreate, db: Session = Depends(get_db)):
     """Create a new stock record"""
+    db_stock = crud.get_stock_by_trade_code(db, stock.trade_code)
+    if db_stock:
+        raise HTTPException(status_code=400, detail="Stock with this trade code already exists")
     return crud.create_stock(db, stock)
 
-@app.put("/api/stocks/{trade_code}", response_model=schemas.Stock)
-def update_stock(trade_code: str, stock: schemas.StockCreate, db: Session = Depends(get_db)):
-    """Update a stock record"""
-    db_stock = crud.update_stock(db, trade_code, stock)
+@app.put("/api/stocks/{stock_id}", response_model=schemas.Stock)
+def update_stock(stock_id: int, stock: schemas.StockCreate, db: Session = Depends(get_db)):
+    """Update a stock record by ID"""
+    db_stock = crud.update_stock(db, stock_id, stock)
     if not db_stock:
         raise HTTPException(status_code=404, detail="Stock not found")
     return db_stock
 
-@app.delete("/api/stocks/{trade_code}")
-def delete_stock(trade_code: str, db: Session = Depends(get_db)):
-    """Delete a stock record"""
-    db_stock = crud.delete_stock(db, trade_code)
+@app.delete("/api/stocks/{stock_id}")
+def delete_stock(stock_id: int, db: Session = Depends(get_db)):
+    """Delete a stock record by ID"""
+    db_stock = crud.delete_stock(db, stock_id)
     if not db_stock:
         raise HTTPException(status_code=404, detail="Stock not found")
-    return {"detail": "Stock deleted"}
+    return {"detail": "Stock deleted successfully"}
 
 @app.get("/api/health")
 def health_check():
