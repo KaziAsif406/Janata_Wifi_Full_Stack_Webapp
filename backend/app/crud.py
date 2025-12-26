@@ -1,9 +1,14 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func, distinct
 from app import models, schemas
 
 def get_stocks(db: Session, skip: int = 0, limit: int = 100):
     """Get all stocks with pagination"""
     return db.query(models.Stock).offset(skip).limit(limit).all()
+
+def get_unique_trade_codes(db: Session):
+    """Get unique trade codes sorted alphabetically"""
+    return db.query(distinct(models.Stock.trade_code)).order_by(models.Stock.trade_code.asc()).all()
 
 def get_stock_by_id(db: Session, stock_id: int):
     """Get stock by ID"""

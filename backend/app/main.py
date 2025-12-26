@@ -29,6 +29,12 @@ def get_all_stocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
     """Get all stocks with pagination (default: skip=0, limit=100)"""
     return crud.get_stocks(db, skip=skip, limit=limit)
 
+@app.get("/api/trade-codes", response_model=list[str])
+def get_trade_codes(db: Session = Depends(get_db)):
+    """Get list of unique trade codes sorted alphabetically"""
+    trade_codes = crud.get_unique_trade_codes(db)
+    return [code[0] for code in trade_codes]
+
 @app.get("/api/stocks/{stock_id}", response_model=schemas.Stock)
 def get_stock(stock_id: int, db: Session = Depends(get_db)):
     """Get stock by ID"""

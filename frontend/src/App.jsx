@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import StockTable from './components/StockTable';
+import ChartView from './components/ChartView';
 import stockAPI from './services/stockAPI';
 import './styles/App.css';
 
@@ -9,6 +10,27 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tradeCodes, setTradeCodes] = useState([]);
+  const [selectedTradeCode, setSelectedTradeCode] = useState(null);
+
+  // Fetch trade codes on component mount
+  useEffect(() => {
+    const fetchTradeCodes = async () => {
+      try {
+        const response = await stockAPI.getTradeCodeList();
+        const codes = response.data;
+        setTradeCodes(codes);
+        // Set default selection to first trade code
+        if (codes.length > 0) {
+          setSelectedTradeCode(codes[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching trade codes:', err);
+      }
+    };
+
+    fetchTradeCodes();
+  }, []);
 
   // Fetch stocks from API on component mount
   useEffect(() => {
@@ -63,6 +85,25 @@ export default function App() {
       )}
 
       <div className="search-container">
+        <div className="dropdown-wrapper">
+          <label htmlFor="trade-code-select" className="dropdown-label">
+            Select Trade Code:
+          </label>
+          <select
+            id="trade-code-select"
+            value={selectedTradeCode || ''}
+            onChange={(e) => setSelectedTradeCode(e.target.value)}
+            className="trade-code-dropdown"
+            disabled={loading || tradeCodes.length === 0}
+          >
+            {tradeCodes.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <input
           type="text"
           placeholder="Search by trade code..."
@@ -75,7 +116,12 @@ export default function App() {
 
       <main className="main-content">
         {loading && <div className="loading">Loading stock data...</div>}
-        {!loading && <StockTable data={filteredData} onDataUpdate={handleDataUpdate} />}
+        {!loading && (
+          <>
+            <ChartView selectedTradeCode={selectedTradeCode} />
+            <StockTable data={filteredData} onDataUpdate={handleDataUpdate} />
+          </>
+        )}
       </main>
     </div>
   );

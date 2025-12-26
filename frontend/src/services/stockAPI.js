@@ -57,6 +57,21 @@ export const stockAPI = {
    */
   deleteStock: (id) =>
     apiClient.delete(`/stocks/${id}`),
+
+  /**
+   * Get chart data for a stock (date, close, volume)
+   * @param {string} tradeCode - Trade code to get chart data for
+   * @returns {Promise} Array of chart data points sorted by date ascending
+   */
+  getChartData: (tradeCode) =>
+    apiClient.get(`/stocks/chart/${tradeCode}`),
+
+  /**
+   * Get list of unique trade codes
+   * @returns {Promise} Array of trade code strings sorted alphabetically
+   */
+  getTradeCodeList: () =>
+    apiClient.get('/trade-codes'),
 };
 
 export default stockAPI;
