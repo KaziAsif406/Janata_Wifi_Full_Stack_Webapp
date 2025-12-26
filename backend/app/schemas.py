@@ -21,3 +21,12 @@ class Stock(BaseModel):
     
     class Config:
         from_attributes = True
+
+class StockChartData(BaseModel):
+    """Lightweight schema for chart visualization"""
+    date: str
+    close: float
+    volume: int
+    
+    class Config:
+        from_attributes = True

@@ -45,6 +45,14 @@ def search_stock_by_code(trade_code: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Stock with trade code not found")
     return db_stock
 
+@app.get("/api/stocks/chart/{trade_code}", response_model=list[schemas.StockChartData])
+def get_stock_chart_data(trade_code: str, db: Session = Depends(get_db)):
+    """Get chart data for a stock (date, close, volume) sorted by date ascending"""
+    stocks = crud.get_stock_chart_data(db, trade_code)
+    if not stocks:
+        raise HTTPException(status_code=404, detail="No data found for this trade code")
+    return stocks
+
 @app.post("/api/stocks", response_model=schemas.Stock, status_code=201)
 def create_stock(stock: schemas.StockCreate, db: Session = Depends(get_db)):
     """Create a new stock record"""

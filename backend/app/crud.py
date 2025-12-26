@@ -13,6 +13,12 @@ def get_stock_by_trade_code(db: Session, trade_code: str):
     """Get stock by trade code"""
     return db.query(models.Stock).filter(models.Stock.trade_code == trade_code).first()
 
+def get_stock_chart_data(db: Session, trade_code: str):
+    """Get chart data for a trade code, sorted by date ascending"""
+    return db.query(models.Stock).filter(
+        models.Stock.trade_code == trade_code
+    ).order_by(models.Stock.date.asc()).all()
+
 def create_stock(db: Session, stock: schemas.StockCreate):
     """Create a new stock record"""
     db_stock = models.Stock(**stock.dict())
