@@ -8,10 +8,15 @@ export default function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tradeCodes, setTradeCodes] = useState([]);
   const [selectedTradeCode, setSelectedTradeCode] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const ITEMS_PER_PAGE = 500;
 
   // Fetch trade codes on component mount
   useEffect(() => {
@@ -32,14 +37,19 @@ export default function App() {
     fetchTradeCodes();
   }, []);
 
-  // Fetch stocks from API on component mount
+  // Fetch stocks from API with pagination and search filter
   useEffect(() => {
     const fetchStocks = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await stockAPI.getAllStocks(0, 20000);
-        setData(response.data);
+        const skip = (currentPage - 1) * ITEMS_PER_PAGE;
+        // Pass search term to backend
+        const response = await stockAPI.getAllStocks(skip, ITEMS_PER_PAGE, searchTerm || null);
+        // Handle new paginated response format
+        setData(response.data.data || response.data);
+        // Use total from backend (already filtered by search)
+        setTotalRecords(response.data.total || response.data.length);
       } catch (err) {
         const errorMessage = err.response?.data?.detail || 
                            err.message || 
@@ -52,15 +62,19 @@ export default function App() {
     };
 
     fetchStocks();
-  }, []);
+  }, [currentPage, searchTerm]);
 
-  // Filter data based on search term
+  // Update filtered data when raw data changes (client-side filtering no longer needed)
   useEffect(() => {
-    const filtered = data.filter((item) =>
-      item.trade_code.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredData(filtered);
-  }, [data, searchTerm]);
+    setFilteredData(data);
+  }, [data]);
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    if (searchTerm && currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [searchTerm]);
 
   // Handle updated stock data
   const handleDataUpdate = (updatedStock) => {
@@ -69,6 +83,37 @@ export default function App() {
         stock.id === updatedStock.id ? updatedStock : stock
       )
     );
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalRecords / ITEMS_PER_PAGE);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    
+    // Exclude page 1 if we're showing it separately (when currentPage > 1)
+    const startMin = currentPage > 1 ? 2 : 1;
+    let startPage = Math.max(startMin, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(startMin, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   };
 
   return (
@@ -115,11 +160,73 @@ export default function App() {
       </div>
 
       <main className="main-content">
-        {loading && <div className="loading">Loading stock data...</div>}
-        {!loading && (
+        {loading && currentPage === 1 && <div className="loading">Loading stock data...</div>}
+        {(!loading || currentPage !== 1) && (
           <>
             <ChartView selectedTradeCode={selectedTradeCode} />
-            <StockTable data={filteredData} onDataUpdate={handleDataUpdate} />
+            <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && currentPage !== 1} />
+            
+            {totalRecords > 0 && totalPages > 1 && (
+              <div className="pagination-container">
+                <button
+                  className="pagination-btn pagination-nav"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  ← Previous
+                </button>
+                
+                <div className="pagination-numbers">
+                  {currentPage > 1 && (
+                    <>
+                      <button
+                        className="pagination-btn"
+                        onClick={() => handlePageChange(1)}
+                      >
+                        1
+                      </button>
+                      {currentPage > 3 && <span className="pagination-dots">...</span>}
+                    </>
+                  )}
+                  
+                  {getPageNumbers().map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      className={`pagination-btn ${pageNum === currentPage ? 'active' : ''}`}
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                  
+                  {currentPage < totalPages && (
+                    <>
+                      {currentPage < totalPages - 2 && <span className="pagination-dots">...</span>}
+                      {totalPages > 1 && (
+                        <button
+                          className="pagination-btn"
+                          onClick={() => handlePageChange(totalPages)}
+                        >
+                          {totalPages}
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+                
+                <button
+                  className="pagination-btn pagination-nav"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next →
+                </button>
+                
+                <span className="pagination-info">
+                  Page {currentPage} of {totalPages} ({totalRecords} total records)
+                </span>
+              </div>
+            )}
           </>
         )}
       </main>

@@ -27,6 +27,13 @@ class StockChartData(BaseModel):
     date: str
     close: float
     volume: int
+
+class StocksPaginatedResponse(BaseModel):
+    """Response model for paginated stock list"""
+    data: list[Stock]
+    total: int
+    skip: int
+    limit: int
     
     class Config:
         from_attributes = True

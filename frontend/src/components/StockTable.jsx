@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import stockAPI from '../services/stockAPI';
 import '../styles/StockTable.css';
 
-export default function StockTable({ data, onDataUpdate }) {
+export default function StockTable({ data, onDataUpdate, loading = false }) {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -223,6 +223,7 @@ export default function StockTable({ data, onDataUpdate }) {
           ))}
         </tbody>
       </table>
+      {loading && <div className="table-loading-overlay">Loading page data...</div>}
     </div>
   );
 }

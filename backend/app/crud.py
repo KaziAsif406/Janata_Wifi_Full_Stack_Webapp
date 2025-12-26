@@ -2,13 +2,31 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, distinct
 from app import models, schemas
 
-def get_stocks(db: Session, skip: int = 0, limit: int = 100):
-    """Get all stocks with pagination"""
+def get_stocks(db: Session, skip: int = 0, limit: int = 500, search: str = None):
+    """Get all stocks with pagination, total count, and optional search filter"""
+    query = db.query(models.Stock)
+    
+    # Apply search filter if provided
+    if search and search.strip():
+        search_term = f"%{search.strip()}%"
+        query = query.filter(models.Stock.trade_code.ilike(search_term))
+    
+    # Get total count after filtering
+    total = query.count()
+    
+    # Apply pagination
+    stocks = query.offset(skip).limit(limit).all()
+    
+    return {"data": stocks, "total": total, "skip": skip, "limit": limit}
+
+def get_stocks_simple(db: Session, skip: int = 0, limit: int = 500):
+    """Get all stocks with pagination (simple list)"""
     return db.query(models.Stock).offset(skip).limit(limit).all()
 
 def get_unique_trade_codes(db: Session):
     """Get unique trade codes sorted alphabetically"""
     return db.query(distinct(models.Stock.trade_code)).order_by(models.Stock.trade_code.asc()).all()
+
 
 def get_stock_by_id(db: Session, stock_id: int):
     """Get stock by ID"""

@@ -9,13 +9,14 @@ const apiClient = axios.create({
 
 export const stockAPI = {
   /**
-   * Get all stocks with optional pagination
+   * Get all stocks with optional pagination and search filter
    * @param {number} skip - Number of records to skip
    * @param {number} limit - Number of records to return
-   * @returns {Promise} Array of stocks
+   * @param {string} search - Optional search term for trade code
+   * @returns {Promise} Paginated stocks response with total count
    */
-  getAllStocks: (skip = 0, limit = 100) =>
-    apiClient.get('/stocks', { params: { skip, limit } }),
+  getAllStocks: (skip = 0, limit = 500, search = null) =>
+    apiClient.get('/stocks', { params: { skip, limit, search } }),
 
   /**
    * Get a single stock by ID

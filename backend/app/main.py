@@ -24,10 +24,10 @@ def startup_event():
     """Load initial data on application startup"""
     load_stock_data()
 
-@app.get("/api/stocks", response_model=list[schemas.Stock])
-def get_all_stocks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Get all stocks with pagination (default: skip=0, limit=100)"""
-    return crud.get_stocks(db, skip=skip, limit=limit)
+@app.get("/api/stocks", response_model=schemas.StocksPaginatedResponse)
+def get_all_stocks(skip: int = 0, limit: int = 500, search: str = None, db: Session = Depends(get_db)):
+    """Get all stocks with pagination, optional search filter (default: skip=0, limit=500)"""
+    return crud.get_stocks(db, skip=skip, limit=limit, search=search)
 
 @app.get("/api/trade-codes", response_model=list[str])
 def get_trade_codes(db: Session = Depends(get_db)):

@@ -24,8 +24,10 @@ import '../styles/ChartView.css';
  *   - selectedTradeCode: string (trade code to visualize)
  * 
  * Data will come from API endpoint: /api/stocks/chart/{trade_code}
+ * 
+ * Memoized to prevent re-renders when parent updates but selectedTradeCode doesn't change
  */
-export default function ChartView({ selectedTradeCode }) {
+function ChartView({ selectedTradeCode }) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -212,3 +214,6 @@ export default function ChartView({ selectedTradeCode }) {
     </div>
   );
 }
+
+// Memoize ChartView to prevent re-renders when parent updates but selectedTradeCode prop doesn't change
+export default React.memo(ChartView);
