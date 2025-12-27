@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StockTable from './components/StockTable';
 import ChartView from './components/ChartView';
 import PriceRangeChart from './components/PriceRangeChart';
+import KPISummary from './components/KPISummary';
 import stockAPI from './services/stockAPI';
 import './styles/App.css';
 
@@ -162,6 +163,7 @@ export default function App() {
         {loading && data.length === 0 && <div className="loading">Loading stock data...</div>}
         {(!loading || data.length > 0) && (
           <>
+            <KPISummary data={data} selectedTradeCode={selectedTradeCode} />
             <ChartView selectedTradeCode={selectedTradeCode} />
             <PriceRangeChart selectedTradeCode={selectedTradeCode} />
             <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && data.length > 0} />
