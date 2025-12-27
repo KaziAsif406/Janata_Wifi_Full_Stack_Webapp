@@ -7,9 +7,6 @@ from app import models, schemas, crud
 from app.database import engine, get_db
 from app.seed import load_stock_data
 
-# Create all tables on startup
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Stock Market API", version="1.0.0")
 
 # Configure CORS from environment variable
@@ -28,7 +25,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup_event():
-    """Load initial data on application startup"""
+    """Create database tables and load initial data on startup"""
+    try:
+        # Create all tables if they don't exist
+        models.Base.metadata.create_all(bind=engine)
+        print("✓ Database tables created/verified")
+    except Exception as e:
+        print(f"⚠ Warning: Could not create tables at startup: {e}")
+        print("  Tables will be created on first successful database connection")
+    
+    # Load stock data
     load_stock_data()
 
 @app.get("/api/stocks", response_model=schemas.StocksPaginatedResponse)
