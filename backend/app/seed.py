@@ -24,7 +24,7 @@ def load_stock_data():
             return
         
         # Read and insert CSV data
-        with open(CSV_FILE_PATH, 'r') as f:
+        with open(CSV_FILE_PATH, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
             stocks = []
             
@@ -33,13 +33,17 @@ def load_stock_data():
                     # Clean volume by removing commas
                     volume = int(row['volume'].replace(',', ''))
                     
+                    # Helper function to clean float values with commas
+                    def clean_float(val):
+                        return float(str(val).replace(',', ''))
+                    
                     stock = models.Stock(
                         trade_code=row.get('trade_code') or row.get('Trade Code'),
                         date=row.get('date') or row.get('Date'),
-                        open=float(row.get('open') or row.get('Open')),
-                        high=float(row.get('high') or row.get('High')),
-                        low=float(row.get('low') or row.get('Low')),
-                        close=float(row.get('close') or row.get('Close')),
+                        open=clean_float(row.get('open') or row.get('Open')),
+                        high=clean_float(row.get('high') or row.get('High')),
+                        low=clean_float(row.get('low') or row.get('Low')),
+                        close=clean_float(row.get('close') or row.get('Close')),
                         volume=volume
                     )
                     stocks.append(stock)
