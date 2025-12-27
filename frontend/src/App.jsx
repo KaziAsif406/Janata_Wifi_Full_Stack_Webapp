@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import StockTable from './components/StockTable';
 import ChartView from './components/ChartView';
 import PriceRangeChart from './components/PriceRangeChart';
 import KPISummary from './components/KPISummary';
 import stockAPI from './services/stockAPI';
 import './styles/App.css';
+
+// Global chart data cache shared across all components
+const globalChartCache = new Map();
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -164,8 +167,8 @@ export default function App() {
         {(!loading || data.length > 0) && (
           <>
             <KPISummary data={data} selectedTradeCode={selectedTradeCode} />
-            <ChartView selectedTradeCode={selectedTradeCode} />
-            <PriceRangeChart selectedTradeCode={selectedTradeCode} />
+            <ChartView selectedTradeCode={selectedTradeCode} chartCache={globalChartCache} />
+            <PriceRangeChart selectedTradeCode={selectedTradeCode} chartCache={globalChartCache} />
             <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && data.length > 0} />
             
             {totalRecords > 0 && (

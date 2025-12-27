@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import stockAPI from '../services/stockAPI';
+import { useChartDataCache } from '../hooks/useChartDataCache';
 import '../styles/ChartView.css';
 
 /**
@@ -27,13 +28,15 @@ import '../styles/ChartView.css';
  * 
  * Memoized to prevent re-renders when parent updates but selectedTradeCode doesn't change
  */
-function ChartView({ selectedTradeCode }) {
+function ChartView({ selectedTradeCode, chartCache }) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { getFromCache, saveToCache } = useChartDataCache(chartCache);
 
   /**
    * Fetch chart data when trade code changes
+   * Uses cache to avoid redundant API calls for previously viewed trade codes
    */
   useEffect(() => {
     if (!selectedTradeCode) {
@@ -46,9 +49,18 @@ function ChartView({ selectedTradeCode }) {
         setLoading(true);
         setError(null);
 
-        // Fetch chart data from backend
+        // Check if data is already cached
+        const cachedData = getFromCache(selectedTradeCode);
+        if (cachedData) {
+          // Use cached data - instant load, no API call
+          setChartData(cachedData);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch chart data from backend if not in cache
         // Endpoint: GET /api/stocks/chart/{trade_code}
-        // Returns: [{ date, close, volume }, ...] sorted by date ascending
+        // Returns: [{ date, close, volume, high, low }, ...] sorted by date ascending
         const response = await fetch(
           `http://localhost:8000/api/stocks/chart/${selectedTradeCode}`
         );
@@ -59,6 +71,8 @@ function ChartView({ selectedTradeCode }) {
         }
 
         const data = await response.json();
+        // Save to cache for future use
+        saveToCache(selectedTradeCode, data);
         setChartData(data);
       } catch (err) {
         const errorMessage = err.message || 'Failed to fetch chart data';
@@ -70,7 +84,7 @@ function ChartView({ selectedTradeCode }) {
     };
 
     fetchChartData();
-  }, [selectedTradeCode]);
+  }, [selectedTradeCode, getFromCache, saveToCache]);
 
   /**
    * Render loading state

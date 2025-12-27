@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import stockAPI from '../services/stockAPI';
+import { useChartDataCache } from '../hooks/useChartDataCache';
 import '../styles/PriceRangeChart.css';
 
 /**
@@ -24,10 +25,11 @@ import '../styles/PriceRangeChart.css';
  * 
  * Data comes from API endpoint: /api/stocks/chart/{trade_code}
  */
-function PriceRangeChart({ selectedTradeCode }) {
+function PriceRangeChart({ selectedTradeCode, chartCache }) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { getFromCache, saveToCache } = useChartDataCache(chartCache);
 
   useEffect(() => {
     if (!selectedTradeCode) {
@@ -39,8 +41,22 @@ function PriceRangeChart({ selectedTradeCode }) {
       try {
         setLoading(true);
         setError(null);
+
+        // Check if data is already cached
+        const cachedData = getFromCache(selectedTradeCode);
+        if (cachedData) {
+          // Use cached data - instant load, no API call
+          setChartData(cachedData);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch from API if not in cache
         const response = await stockAPI.getChartData(selectedTradeCode);
         // Data already sorted by date ascending from backend
+        
+        // Save to cache for future use
+        saveToCache(selectedTradeCode, response.data);
         setChartData(response.data);
       } catch (err) {
         setError('Failed to load price range data');
@@ -52,7 +68,7 @@ function PriceRangeChart({ selectedTradeCode }) {
     };
 
     fetchChartData();
-  }, [selectedTradeCode]);
+  }, [selectedTradeCode, getFromCache, saveToCache]);
 
   if (!selectedTradeCode || chartData.length === 0) {
     return null;
