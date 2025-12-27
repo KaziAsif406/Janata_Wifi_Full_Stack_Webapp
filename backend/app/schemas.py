@@ -23,10 +23,12 @@ class Stock(BaseModel):
         from_attributes = True
 
 class StockChartData(BaseModel):
-    """Lightweight schema for chart visualization"""
+    """Lightweight schema for chart visualization (includes price range data)"""
     date: str
     close: float
     volume: int
+    high: float
+    low: float
 
 class StocksPaginatedResponse(BaseModel):
     """Response model for paginated stock list"""

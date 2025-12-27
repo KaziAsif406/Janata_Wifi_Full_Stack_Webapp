@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StockTable from './components/StockTable';
 import ChartView from './components/ChartView';
+import PriceRangeChart from './components/PriceRangeChart';
 import stockAPI from './services/stockAPI';
 import './styles/App.css';
 
@@ -118,10 +119,38 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <h1>Stock Market Data Viewer</h1>
-        <p className="subtitle">Real-time stock market information</p>
-      </header>
+      <div className="header-search-wrapper">
+        <header className="header">
+          <h1>Stock Market Data Viewer</h1>
+          <p className="subtitle">Real-time stock market information</p>
+        </header>
+
+        <div className="search-container">
+          <div className="dropdown-wrapper">
+            <select
+              id="trade-code-select"
+              value={selectedTradeCode || ''}
+              onChange={(e) => setSelectedTradeCode(e.target.value)}
+              className="trade-code-dropdown"
+              disabled={loading || tradeCodes.length === 0}
+            >
+              {tradeCodes.map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <input
+            type="text"
+            placeholder="Search by trade code..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+      </div>
 
       {error && (
         <div className="error-banner">
@@ -129,40 +158,12 @@ export default function App() {
         </div>
       )}
 
-      <div className="search-container">
-        <div className="dropdown-wrapper">
-          <label htmlFor="trade-code-select" className="dropdown-label">
-            Select Trade Code:
-          </label>
-          <select
-            id="trade-code-select"
-            value={selectedTradeCode || ''}
-            onChange={(e) => setSelectedTradeCode(e.target.value)}
-            className="trade-code-dropdown"
-            disabled={loading || tradeCodes.length === 0}
-          >
-            {tradeCodes.map((code) => (
-              <option key={code} value={code}>
-                {code}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Search by trade code..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-      </div>
-
       <main className="main-content">
         {loading && data.length === 0 && <div className="loading">Loading stock data...</div>}
         {(!loading || data.length > 0) && (
           <>
             <ChartView selectedTradeCode={selectedTradeCode} />
+            <PriceRangeChart selectedTradeCode={selectedTradeCode} />
             <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && data.length > 0} />
             
             {totalRecords > 0 && (
