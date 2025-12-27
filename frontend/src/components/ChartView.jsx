@@ -61,16 +61,8 @@ function ChartView({ selectedTradeCode, chartCache }) {
         // Fetch chart data from backend if not in cache
         // Endpoint: GET /api/stocks/chart/{trade_code}
         // Returns: [{ date, close, volume, high, low }, ...] sorted by date ascending
-        const response = await fetch(
-          `http://localhost:8000/api/stocks/chart/${selectedTradeCode}`
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'Failed to fetch chart data');
-        }
-
-        const data = await response.json();
+        const response = await stockAPI.getChartData(selectedTradeCode);
+        const data = response.data;
         // Save to cache for future use
         saveToCache(selectedTradeCode, data);
         setChartData(data);
