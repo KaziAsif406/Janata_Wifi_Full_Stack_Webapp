@@ -155,72 +155,75 @@ export default function App() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
-          disabled={loading}
         />
       </div>
 
       <main className="main-content">
-        {loading && currentPage === 1 && <div className="loading">Loading stock data...</div>}
-        {(!loading || currentPage !== 1) && (
+        {loading && data.length === 0 && <div className="loading">Loading stock data...</div>}
+        {(!loading || data.length > 0) && (
           <>
             <ChartView selectedTradeCode={selectedTradeCode} />
-            <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && currentPage !== 1} />
+            <StockTable data={filteredData} onDataUpdate={handleDataUpdate} loading={loading && data.length > 0} />
             
-            {totalRecords > 0 && totalPages > 1 && (
+            {totalRecords > 0 && (
               <div className="pagination-container">
-                <button
-                  className="pagination-btn pagination-nav"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  ← Previous
-                </button>
-                
-                <div className="pagination-numbers">
-                  {currentPage > 1 && (
-                    <>
-                      <button
-                        className="pagination-btn"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        1
-                      </button>
-                      {currentPage > 3 && <span className="pagination-dots">...</span>}
-                    </>
-                  )}
-                  
-                  {getPageNumbers().map((pageNum) => (
+                {totalPages > 1 ? (
+                  <>
                     <button
-                      key={pageNum}
-                      className={`pagination-btn ${pageNum === currentPage ? 'active' : ''}`}
-                      onClick={() => handlePageChange(pageNum)}
+                      className="pagination-btn pagination-nav"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
                     >
-                      {pageNum}
+                      ← Previous
                     </button>
-                  ))}
-                  
-                  {currentPage < totalPages && (
-                    <>
-                      {currentPage < totalPages - 2 && <span className="pagination-dots">...</span>}
-                      {totalPages > 1 && (
-                        <button
-                          className="pagination-btn"
-                          onClick={() => handlePageChange(totalPages)}
-                        >
-                          {totalPages}
-                        </button>
+                    
+                    <div className="pagination-numbers">
+                      {currentPage > 1 && (
+                        <>
+                          <button
+                            className="pagination-btn"
+                            onClick={() => handlePageChange(1)}
+                          >
+                            1
+                          </button>
+                          {currentPage > 3 && <span className="pagination-dots">...</span>}
+                        </>
                       )}
-                    </>
-                  )}
-                </div>
-                
-                <button
-                  className="pagination-btn pagination-nav"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                >
-                  Next →
-                </button>
+                      
+                      {getPageNumbers().map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          className={`pagination-btn ${pageNum === currentPage ? 'active' : ''}`}
+                          onClick={() => handlePageChange(pageNum)}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                      
+                      {currentPage < totalPages && (
+                        <>
+                          {currentPage < totalPages - 2 && <span className="pagination-dots">...</span>}
+                          {totalPages > 1 && (
+                            <button
+                              className="pagination-btn"
+                              onClick={() => handlePageChange(totalPages)}
+                            >
+                              {totalPages}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    
+                    <button
+                      className="pagination-btn pagination-nav"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage >= totalPages}
+                    >
+                      Next →
+                    </button>
+                  </>
+                ) : null}
                 
                 <span className="pagination-info">
                   Page {currentPage} of {totalPages} ({totalRecords} total records)
