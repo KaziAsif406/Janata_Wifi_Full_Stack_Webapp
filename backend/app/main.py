@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,10 +12,15 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Stock Market API", version="1.0.0")
 
+# Configure CORS from environment variable
+# Default to localhost for development, can be overridden with CORS_ORIGINS env var
+cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+cors_origins = [origin.strip() for origin in cors_origins]
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (change to specific domains in production)
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
