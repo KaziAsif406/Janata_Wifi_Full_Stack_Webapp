@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -25,7 +26,7 @@ def startup_event():
     load_stock_data()
 
 @app.get("/api/stocks", response_model=schemas.StocksPaginatedResponse)
-def get_all_stocks(skip: int = 0, limit: int = 500, search: str = None, db: Session = Depends(get_db)):
+def get_all_stocks(skip: int = 0, limit: int = 500, search: Optional[str] = None, db: Session = Depends(get_db)):
     """Get all stocks with pagination, optional search filter (default: skip=0, limit=500)"""
     return crud.get_stocks(db, skip=skip, limit=limit, search=search)
 

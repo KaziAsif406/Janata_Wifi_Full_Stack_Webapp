@@ -1,8 +1,9 @@
+from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, distinct
 from app import models, schemas
 
-def get_stocks(db: Session, skip: int = 0, limit: int = 500, search: str = None):
+def get_stocks(db: Session, skip: int = 0, limit: int = 500, search: Optional[str] = None):
     """Get all stocks with pagination, total count, and optional search filter"""
     query = db.query(models.Stock)
     
