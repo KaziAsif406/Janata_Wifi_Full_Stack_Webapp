@@ -34,17 +34,18 @@ def load_stock_data():
                     volume = int(row['volume'].replace(',', ''))
                     
                     stock = models.Stock(
-                        trade_code=row['trade_code'],
-                        date=row['date'],
-                        open=float(row['open']),
-                        high=float(row['high']),
-                        low=float(row['low']),
-                        close=float(row['close']),
+                        trade_code=row.get('trade_code') or row.get('Trade Code'),
+                        date=row.get('date') or row.get('Date'),
+                        open=float(row.get('open') or row.get('Open')),
+                        high=float(row.get('high') or row.get('High')),
+                        low=float(row.get('low') or row.get('Low')),
+                        close=float(row.get('close') or row.get('Close')),
                         volume=volume
                     )
                     stocks.append(stock)
-                except KeyError as e:
-                    print(f"⚠ Missing column in CSV: {e}. Skipping data load.")
+                except (KeyError, ValueError, TypeError) as e:
+                    print(f"⚠ Error processing CSV row: {e}. Skipping data load.")
+                    print(f"   CSV columns found: {list(row.keys())}")
                     db.rollback()
                     return
             

@@ -9,6 +9,11 @@ from app.seed import load_stock_data
 
 app = FastAPI(title="Stock Market API", version="1.0.0")
 
+@app.get("/")
+def root():
+    """Root endpoint"""
+    return {"message": "Stock Market API", "version": "1.0.0", "docs": "/docs"}
+
 # Configure CORS from environment variable
 # Default to localhost for development, can be overridden with CORS_ORIGINS env var
 cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
