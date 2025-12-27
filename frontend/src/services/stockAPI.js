@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = "https://stock-market-api-1llr.onrender.com/api" || 'http://localhost:8000/api';
+// Determine API base URL based on environment
+const API_BASE_URL = import.meta.env.MODE === 'development' 
+  ? 'http://localhost:8000/api'
+  : (import.meta.env.VITE_API_URL || 'https://stock-market-api-1llr.onrender.com/api');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
