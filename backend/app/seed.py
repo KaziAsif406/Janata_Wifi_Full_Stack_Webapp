@@ -19,7 +19,8 @@ def load_stock_data():
         
         # Check if CSV file exists
         if not os.path.exists(CSV_FILE_PATH):
-            print(f"✗ CSV file not found at {CSV_FILE_PATH}")
+            print(f"⚠ CSV file not found at {CSV_FILE_PATH}. Skipping data load.")
+            print("   You can manually load data later by uploading the CSV file.")
             return
         
         # Read and insert CSV data
@@ -28,25 +29,32 @@ def load_stock_data():
             stocks = []
             
             for row in reader:
-                # Clean volume by removing commas
-                volume = int(row['volume'].replace(',', ''))
-                
-                stock = models.Stock(
-                    trade_code=row['trade_code'],
-                    date=row['date'],
-                    open=float(row['open']),
-                    high=float(row['high']),
-                    low=float(row['low']),
-                    close=float(row['close']),
-                    volume=volume
-                )
-                stocks.append(stock)
+                try:
+                    # Clean volume by removing commas
+                    volume = int(row['volume'].replace(',', ''))
+                    
+                    stock = models.Stock(
+                        trade_code=row['trade_code'],
+                        date=row['date'],
+                        open=float(row['open']),
+                        high=float(row['high']),
+                        low=float(row['low']),
+                        close=float(row['close']),
+                        volume=volume
+                    )
+                    stocks.append(stock)
+                except KeyError as e:
+                    print(f"⚠ Missing column in CSV: {e}. Skipping data load.")
+                    db.rollback()
+                    return
             
             # Batch insert
             db.add_all(stocks)
             db.commit()
             print(f"✓ Successfully loaded {len(stocks)} stock records from CSV")
     
+    except FileNotFoundError:
+        print(f"⚠ CSV file not found. Skipping data load.")
     except Exception as e:
         print(f"✗ Error loading CSV data: {e}")
         db.rollback()
