@@ -9,6 +9,10 @@ from app.seed import load_stock_data
 
 app = FastAPI(title="Stock Market API", version="1.0.0")
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.get("/")
 def root():
     """Root endpoint"""
