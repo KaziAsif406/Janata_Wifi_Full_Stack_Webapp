@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stock-market-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://frontend
+      - PORT=8000
+      # Add other environment variables as needed
+      # - DATABASE_URL=postgresql://user:password@db:5432/stockmarket
+    volumes:
+      - ./backend:/app
+    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port $${PORT:-8000}"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  # Frontend Nginx service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    container_name: stock-market-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # PostgreSQL Database (optional - uncomment if using database)
+  db:
+    image: postgres:15-alpine
+    container_name: stock-market-db
+    environment:
+      - POSTGRES_USER=stockmarket
+      - POSTGRES_PASSWORD=stockmarket_password
+      - POSTGRES_DB=stockmarket
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockmarket"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
