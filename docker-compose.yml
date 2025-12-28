@@ -37,7 +37,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=/api
+        - VITE_API_URL=http://localhost:8000/api
     container_name: stock-market-frontend
     ports:
       - "8080:8080"
